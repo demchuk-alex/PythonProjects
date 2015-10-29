@@ -1,0 +1,84 @@
+#!/bin/bash
+
+FILE="/var/run/originate.pid"
+
+usage()
+{
+        echo "$0 (start|stop)"
+}
+
+stop()
+{
+        # Если существует pid файл, то убиваем процесс с номером из pid файла
+        if [ -e ${FILE} ]
+        then
+                _pid=$(cat ${FILE})
+                kill -9 $_pid
+                rt=$?
+                if [ "$rt" == "0" ]
+                then
+			rm -r ${FILE}
+			echo 60 > /proc/sys/net/ipv4/tcp_tw_recycle
+                        echo "Originate daemon stop"
+                else
+                        echo "Error stop Originate daemon"
+                fi
+        else
+                echo "Originate daemon is't running"
+        fi
+}
+
+
+start()
+{
+    # Если существует файл с pid процесса не запускаем еще одну копию демона
+    if [ -e ${FILE} ]
+    then
+        _pid=$(cat ${FILE})
+        if [ -e /proc/${_pid} ]
+        then
+            echo "Originate daemon already running with pid = $_pid"
+            exit 0
+        fi
+    else
+		echo "Starting Originate server..."
+		echo 20 > /proc/sys/net/ipv4/tcp_tw_recycle
+		./originate.py &
+		echo "Originate server started yahooo!!!"
+    fi
+}
+
+startnew()
+{
+    # Если существует файл с pid процесса не запускаем еще одну копию демона
+    if [ -e ${FILE} ]
+    then
+        _pid=$(cat ${FILE})
+        if [ -e /proc/${_pid} ]
+        then
+            echo "Originate daemon already running with pid = $_pid"
+            exit 0
+        fi
+    else
+                echo "Starting Originate server..."
+		echo 20 > /proc/sys/net/ipv4/tcp_tw_recycle
+                ./originate.py.save &
+                echo "Originate server started yahooo!!!"
+    fi
+}
+case $1 in
+        "start")
+                start
+                ;;
+	"startnew")
+		startnew
+		;;
+        "stop")
+                stop
+                ;;
+        *)
+                usage
+                ;;
+esac
+
+exit
