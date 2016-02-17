@@ -40,6 +40,7 @@ Async: yes
 logoff="""Action: Logoff
 """
 #tokens for configuration settings
+#bla bla
 token_value={'bindaddr':'127.0.0.1',
 				'port':44444,
 				'attempts':3,
